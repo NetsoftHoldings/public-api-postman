@@ -1,0 +1,404 @@
+{
+	"info": {
+		"_postman_id": "c240ec45-a2f5-4cec-aa04-a8176afba174",
+		"name": "Hubstaff API (PAT)",
+		"description": "This is a simple Postman collection to make API calls against the [Hubstaff API](https://developer.hubstaff.com/).\n\nTo use this collection\n\n1.  Go to the [Hubstaff PAT Developers page](https://developer.hubstaff.com/personal_access_tokens).\n    1.  Sign in if you are not already\n2.  Generate a new token\n    1.  Give it a name\n    2.  Give it the hubstaff:read scope\n    3.  Click Create\n3.  Copy the initial Refresh token provide\n4.  Navigate to the \"Variables\" TAB\n5.  Paste the refresh token into the \"current value\" for REFRESH_TOKEN\n6.  Save the collection\n7.  Navigate to the \"Update Discovery Endpoint\" request in the \"Update config and tokens\" folder\n    1.  Instructions will continue there",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "16262259"
+	},
+	"item": [
+		{
+			"name": "Update config and tokens",
+			"item": [
+				{
+					"name": "Update Discovery endpoint",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Update Variables from Discovery data\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.collectionVariables.set(\"TOKEN_ENDPOINT\", jsonData.token_endpoint);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{DISCOVERY_ENDPOINT}}",
+							"host": [
+								"{{DISCOVERY_ENDPOINT}}"
+							]
+						},
+						"description": "Running this request will update variables in the collection based on the current OpenID Discovery data from Hubstaff Account.\n\n1.  Click \"Send\"\n2.  The \"Tests\" script extracts the **TOKEN_ENDPOINT** and saves it to the variables.\n3.  When finished here navigate to the _Refresh PAT_\n    1.  Test Results will show 1/1 successful"
+					},
+					"response": []
+				},
+				{
+					"name": "Refresh PAT",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"function decodeJWT(jwt) {",
+									"    var parts = jwt.split('.'); // header, payload, signature",
+									"    return {",
+									"        header: JSON.parse(atob(parts[0])),",
+									"        payload: JSON.parse(atob(parts[1]))",
+									"    };",
+									"}",
+									"",
+									"pm.test(\"Update Variables from New token\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.collectionVariables.set(\"ACCESS_TOKEN\", jsonData.access_token);",
+									"    pm.collectionVariables.set(\"REFRESH_TOKEN\", jsonData.refresh_token);",
+									"    jwt = decodeJWT(jsonData.access_token);",
+									"    pm.collectionVariables.set(\"ACCESS_TOKEN_EXPIRES\", jwt.payload.exp);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "grant_type",
+									"value": "refresh_token",
+									"type": "text"
+								},
+								{
+									"key": "refresh_token",
+									"value": "{{REFRESH_TOKEN}}",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{TOKEN_ENDPOINT}}",
+							"host": [
+								"{{TOKEN_ENDPOINT}}"
+							]
+						},
+						"description": "Running this request will refresh your access token.\n\nIf you are just starting using this collection, running this request will provide you the initial access token.\n\n1.  Make sure you have run the _Update Discovery endpoint_ request\n2.  Make sure you have updated the collection _Hubstaff API (PAT)_ variables with your initial **REFRESH_TOKEN** from the [Hubstaff developer page](https://developer.hubstaff.com/personal_access_tokens).\n3.  Run this request\n    1.  This request will perform a refresh token grant for your PAT and store the access token and updated refresh token into the Collection variables\n4.  Navigate to the Collection _Hubstaff API (PAT)_\n5.  Click \"Save\" to persist the current access/refresh token set.\n    \n\nNow you may run authenticated requests.\n\nNavigate to any request and click \"Send\".\n\nIf you receive an invalid token response simply re-run JUST the _Refresh PAT_ request and then save the collection."
+					},
+					"response": []
+				}
+			],
+			"auth": {
+				"type": "noauth"
+			},
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				}
+			]
+		},
+		{
+			"name": "GET /users/me",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{API_ROOT}}/v2/users/me",
+					"host": [
+						"{{API_ROOT}}"
+					],
+					"path": [
+						"v2",
+						"users",
+						"me"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "GET /organizations",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{API_ROOT}}/v2/organizations",
+					"host": [
+						"{{API_ROOT}}"
+					],
+					"path": [
+						"v2",
+						"organizations"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "GET /organizations/#/members",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{API_ROOT}}/v2/organizations/{{ORGANIZATION_ID}}/members?include_projects=true",
+					"host": [
+						"{{API_ROOT}}"
+					],
+					"path": [
+						"v2",
+						"organizations",
+						"{{ORGANIZATION_ID}}",
+						"members"
+					],
+					"query": [
+						{
+							"key": "include_projects",
+							"value": "true"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "GET /organizations/#/projects",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{API_ROOT}}/v2/organizations/{{ORGANIZATION_ID}}/projects?page_limit=10&page_start_id=0",
+					"host": [
+						"{{API_ROOT}}"
+					],
+					"path": [
+						"v2",
+						"organizations",
+						"{{ORGANIZATION_ID}}",
+						"projects"
+					],
+					"query": [
+						{
+							"key": "page_limit",
+							"value": "10",
+							"description": "The page size limit"
+						},
+						{
+							"key": "page_start_id",
+							"value": "0",
+							"description": "The next page start id"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "GET /organizations/#/timesheets",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{API_ROOT}}/v2/organizations/{{ORGANIZATION_ID}}/timesheets",
+					"host": [
+						"{{API_ROOT}}"
+					],
+					"path": [
+						"v2",
+						"organizations",
+						"{{ORGANIZATION_ID}}",
+						"timesheets"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "GET /organizations/#/team_payments",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{API_ROOT}}/v2/organizations/{{ORGANIZATION_ID}}/team_payments?created[start]=2021-05-01&created[stop]=2021-06-01",
+					"host": [
+						"{{API_ROOT}}"
+					],
+					"path": [
+						"v2",
+						"organizations",
+						"{{ORGANIZATION_ID}}",
+						"team_payments"
+					],
+					"query": [
+						{
+							"key": "created[start]",
+							"value": "2021-05-01"
+						},
+						{
+							"key": "created[stop]",
+							"value": "2021-06-01"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "GET /organizations/#/activities/daily",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{API_ROOT}}/v2/organizations/{{ORGANIZATION_ID}}/activities/daily?date[start]=2021-03-01&date[stop]=2021-03-05",
+					"host": [
+						"{{API_ROOT}}"
+					],
+					"path": [
+						"v2",
+						"organizations",
+						"{{ORGANIZATION_ID}}",
+						"activities",
+						"daily"
+					],
+					"query": [
+						{
+							"key": "date[start]",
+							"value": "2021-03-01",
+							"description": "Start date filter"
+						},
+						{
+							"key": "date[stop]",
+							"value": "2021-03-05",
+							"description": "Stop date filter (inclusive)"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "GET /organizations/#/activities",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{API_ROOT}}/v2/organizations/{{ORGANIZATION_ID}}/activities?time_slot[start]=2021-03-01T00:00Z&time_slot[stop]=2021-03-02T00:00Z&user_ids=847683",
+					"host": [
+						"{{API_ROOT}}"
+					],
+					"path": [
+						"v2",
+						"organizations",
+						"{{ORGANIZATION_ID}}",
+						"activities"
+					],
+					"query": [
+						{
+							"key": "time_slot[start]",
+							"value": "2021-03-01T00:00Z",
+							"description": "Start time_slot filter"
+						},
+						{
+							"key": "time_slot[stop]",
+							"value": "2021-03-02T00:00Z",
+							"description": "Stop time_slot filter (exclusive)"
+						},
+						{
+							"key": "user_ids",
+							"value": "847683",
+							"description": "User ID filter"
+						}
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{ACCESS_TOKEN}}",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "REFRESH_TOKEN",
+			"value": ""
+		},
+		{
+			"key": "ACCESS_TOKEN",
+			"value": ""
+		},
+		{
+			"key": "TOKEN_ENDPOINT",
+			"value": ""
+		},
+		{
+			"key": "DISCOVERY_ENDPOINT",
+			"value": "https://account.hubstaff.com/.well-known/openid-configuration"
+		},
+		{
+			"key": "API_ROOT",
+			"value": "https://api.hubstaff.com"
+		},
+		{
+			"key": "ACCESS_TOKEN_EXPIRES",
+			"value": ""
+		},
+		{
+			"key": "ORGANIZATION_ID",
+			"value": ""
+		}
+	]
+}

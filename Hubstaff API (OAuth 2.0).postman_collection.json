@@ -1,0 +1,190 @@
+{
+	"info": {
+		"_postman_id": "61f81295-0e5f-4dbd-a474-556762e3f43b",
+		"name": "Hubstaff API (Oauth 2.0)",
+		"description": "This is a simple Postman collection to make API calls against the [Hubstaff API](https://developer.hubstaff.com/) via an [App](https://developer.hubstaff.com/apps)\n\nTo use this collection\n\n1.  Go to the [Hubstaff Developer Apps page](https://developer.hubstaff.com/apps).\n    1.  Sign in if you are not already\n2.  Generate a new app\n    1.  Give it a name\n    2.  Give it a homepage (your homepage!)\n    3.  Provide a contact email\n    4.  Provide a redirect URI\n        1.  For postman, lets use [http://localhost/auth/success](http://localhost/auth/success)\n    5.  Click Create\n3.  Navigate to the _Variables_ tab\n    1.  Copy the _Client Id_ from the Developer app page to the **CLIENT_ID** variable\n    2.  Copy the _Client Secret_ from the Developer app page to the **CLIENT_ID** variable.\n4.  Save the collection\n5.  Navigate to the _Update Discovery Endpoint_ request in the Update config and tokens folder\n    1.  Instructions will continue there\n\nAfter running the _Update discovery endpoint_ request we need to get an access token.\n\n1.  Click the _Variables_ tab on the collection\n    1.  We need to change the **NONCE** variable to a random value (must be different for every authorization request)\n    2.  This must be done due to Postman [lacking the ability to manage a nonce](https://github.com/postmanlabs/postman-app-support/issues/2360) for us\n2.  Click the _Authorization_ tab on the collection.\n3.  Click the _Get New Access Token_ button\n4.  Log into Hubstaff and authorize your client app access. When successful you will receive a dialog that shows you the new access token.\n5.  Click _Use token_\n    \n\nNow you can select any request in the collection (or make your own) and run them with the current authorization.\n\nNote the authorization will only last 24 hours and will have to be redone to get a new token.\n\nThis is due to missing functionality in Postman to [refresh tokens automatically](https://github.com/postmanlabs/postman-app-support/issues/2452) for you.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "16262259"
+	},
+	"item": [
+		{
+			"name": "Update config and tokens",
+			"item": [
+				{
+					"name": "Update Discovery endpoint Copy",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Update Variables from Discovery data\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.collectionVariables.set(\"AUTHORIZATION_ENDPOINT\", jsonData.authorization_endpoint);",
+									"    pm.collectionVariables.set(\"TOKEN_ENDPOINT\", jsonData.token_endpoint);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{DISCOVERY_ENDPOINT}}",
+							"host": [
+								"{{DISCOVERY_ENDPOINT}}"
+							]
+						},
+						"description": "Running this request will update variables in the collection based on the current OpenID Discovery data from Hubstaff Account.\n\n1.  Click \"Send\"\n2.  The \"Tests\" script extracts the **TOKEN_ENDPOINT** and saves it to the variables.\n3.  When finished here navigate to the main collection _Hubstaff API (OAuth 2.0)_\n    1.  Test Results will show 1/1 when successful"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "GET /users/me",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{API_ROOT}}/v2/users/me",
+					"host": [
+						"{{API_ROOT}}"
+					],
+					"path": [
+						"v2",
+						"users",
+						"me"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "GET /organizations",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{API_ROOT}}/v2/organizations",
+					"host": [
+						"{{API_ROOT}}"
+					],
+					"path": [
+						"v2",
+						"organizations"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"auth": {
+		"type": "oauth2",
+		"oauth2": [
+			{
+				"key": "authUrl",
+				"value": "{{AUTHORIZATION_ENDPOINT}}?nonce={{NONCE}}",
+				"type": "string"
+			},
+			{
+				"key": "redirect_uri",
+				"value": "{{REDIRECT_URL}}",
+				"type": "string"
+			},
+			{
+				"key": "accessTokenUrl",
+				"value": "{{TOKEN_ENDPOINT}}",
+				"type": "string"
+			},
+			{
+				"key": "clientSecret",
+				"value": "{{CLIENT_SECRET}}",
+				"type": "string"
+			},
+			{
+				"key": "clientId",
+				"value": "{{CLIENT_ID}}",
+				"type": "string"
+			},
+			{
+				"key": "scope",
+				"value": "hubstaff:read",
+				"type": "string"
+			},
+			{
+				"key": "tokenName",
+				"value": "hubstaff",
+				"type": "string"
+			},
+			{
+				"key": "addTokenTo",
+				"value": "header",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "DISCOVERY_ENDPOINT",
+			"value": "https://account.hubstaff.com/.well-known/openid-configuration",
+			"type": "string"
+		},
+		{
+			"key": "API_ROOT",
+			"value": "https://api.hubstaff.com/",
+			"type": "string"
+		},
+		{
+			"key": "CLIENT_ID",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "CLIENT_SECRET",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "NONCE",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "REDIRECT_URL",
+			"value": "http://localhost/auth/success"
+		},
+		{
+			"key": "AUTHORIZATION_ENDPOINT",
+			"value": ""
+		},
+		{
+			"key": "TOKEN_ENDPOINT",
+			"value": ""
+		}
+	]
+}
